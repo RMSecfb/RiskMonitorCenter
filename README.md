@@ -79,6 +79,53 @@ RiskMonitorCenter/
 
 注意：工具若加上 Access，在入口內「預覽」時可能顯示登入頁或無法嵌入，此時用「開啟工具」在新分頁開啟即可。
 
+## 準時排程（Cloudflare Worker）
+
+GitHub Actions 的定時排程在清晨常延誤 2 小時以上（例如 06:07 的市場資料實際 08:35 才開始）。`scheduler/` 是一個 Cloudflare Worker，在指定時間準時對 GitHub 發出「手動執行」，通常 1 分鐘內就會開始。GitHub 原本的排程保留作備援，各工作會判斷今天是否已完成，已完成就略過。
+
+| 台北時間 | 觸發的工作 |
+| --- | --- |
+| 週二至週六 06:07、06:37、07:07 | MarketData 市場資料（資料已齊全時自動略過） |
+| 每天 07:17 | MarketData 國際新聞（今日已產生時略過） |
+| 每天 08:22 | negative-news 負面新聞（以每日排程身分執行，晚到的 GitHub 排程會略過） |
+
+### 設定步驟
+
+**1. 建立 GitHub token（用 RMSecfb 帳號）**
+
+GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token：
+
+- Resource owner：RMSecfb
+- Repository access：Only select repositories → `MarketData`、`negative-news`
+- Repository permissions → **Actions：Read and write**（其他維持 No access）
+- Expiration：依公司規定設定，並記下到期日；到期後排程會改由 GitHub 原排程（較晚）執行
+
+**2. 建立 Worker**
+
+Cloudflare → Workers & Pages → Create → Create Worker，名稱填 `risk-scheduler` → Deploy → Edit code，把 `scheduler/worker.js` 的內容整份貼上 → Deploy。
+
+**3. 存入 token**
+
+Worker → Settings → Variables and Secrets → Add：Type 選 **Secret**，Name 填 `GITHUB_TOKEN`，Value 貼上第 1 步的 token。
+
+**4. 新增三組定時觸發**
+
+Worker → Settings → Trigger events → Add → Cron Triggers，逐一新增（時間為 UTC）：
+
+```
+7,37 22 * * MON-FRI
+7,17 23 * * *
+22 0 * * *
+```
+
+星期請用英文縮寫。Cloudflare 的星期數字 1 代表週日，寫成 `1-5` 會變成週日到週四。
+
+**5. 確認**
+
+瀏覽器打開 `https://risk-scheduler.<你的子網域>.workers.dev/check`，三個排程都顯示 `"ok": true` 即設定完成。這個網址只讀取排程狀態，不會觸發任何工作。之後可在 Worker 的 Logs 看到每次觸發結果，GitHub Actions 的執行紀錄中由 Cloudflare 觸發的會標示為 workflow_dispatch。
+
+免費方案每個 Cloudflare 帳號最多 5 組定時觸發，本 Worker 使用 3 組。
+
 ## 快照更新
 
 `snapshot/` 只是備用資料，平常不需要更新。若要更新，從 MarketData 複製 `data/latest.json`、`config.json`、`news/latest.json`（改名為 `news.json`）覆蓋即可。
