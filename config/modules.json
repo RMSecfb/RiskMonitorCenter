@@ -1,0 +1,130 @@
+{
+  "_說明": "工具登錄表。新增工具只要在 tools 加一筆，就會出現在對應辦公桌與清單中。domains 可填多個領域。open：tab（新分頁）或 embed（入口內預覽，部署後且 site.embedTools 為 true 時才啟用）。",
+  "site": {
+    "embedTools": true,
+    "marketSources": {
+      "latest": [
+        "https://raw.githubusercontent.com/RMSecfb/MarketData/main/data/latest.json",
+        "snapshot/latest.json"
+      ],
+      "config": [
+        "https://raw.githubusercontent.com/RMSecfb/MarketData/main/config.json",
+        "snapshot/config.json"
+      ]
+    },
+    "newsSources": [
+      "https://raw.githubusercontent.com/RMSecfb/MarketData/main/news/latest.json",
+      "snapshot/news.json"
+    ]
+  },
+  "domains": [
+    {
+      "id": "market",
+      "name": "市場及信用風險",
+      "en": "Market & Credit Risk",
+      "desc": "全球市場指標與負面新聞監控。大螢幕燈號來自本領域的金融市場每日監控。"
+    },
+    {
+      "id": "brokerage",
+      "name": "經紀業務",
+      "en": "Brokerage Business",
+      "desc": "台股與港股的跨境交易監控。"
+    },
+    {
+      "id": "esg",
+      "name": "ESG 永續",
+      "en": "ESG & Sustainability",
+      "desc": "永續綠色金融知識與企業永續健檢。"
+    },
+    {
+      "id": "ops",
+      "name": "作業風險",
+      "en": "Operational Risk",
+      "desc": "KYC 與作業流程相關工具。"
+    }
+  ],
+  "tools": [
+    {
+      "id": "marketdata",
+      "name": "金融市場每日監控",
+      "domains": [
+        "market"
+      ],
+      "market": "全球",
+      "type": "網頁",
+      "open": "embed",
+      "url": "https://marketdata-dga.pages.dev/",
+      "desc": "VIX、MOVE、美債殖利率、費半、重點個股與主要國家 CDS，含門檻設定與趨勢圖。",
+      "updates": "每週二至週六 06:00 自動更新"
+    },
+    {
+      "id": "negative-news",
+      "name": "負面新聞整合中心",
+      "domains": [
+        "market"
+      ],
+      "market": "美國",
+      "type": "Streamlit",
+      "open": "tab",
+      "coldStart": true,
+      "url": "https://negative-news-nb2mx3cwjfzt67getqpmts.streamlit.app/",
+      "desc": "S&P 500 新聞擷取、AI 事件判讀（L1–L5）、人工覆核與機構內部人交易。",
+      "updates": "每日 08:20 排程，實際執行常延遲"
+    },
+    {
+      "id": "tw-cross-border",
+      "name": "台股跨境交易監控",
+      "domains": [
+        "brokerage"
+      ],
+      "market": "台灣",
+      "type": "Streamlit",
+      "open": "tab",
+      "coldStart": true,
+      "login": true,
+      "url": "https://risk-monitor-cross-border-trading.streamlit.app/",
+      "desc": "個股風險分數、連續異常、產業集中度與每日摘要。",
+      "notice": "資料區間目前停在 2025-12-31（2026-10-24 核對）"
+    },
+    {
+      "id": "hk-cross-border",
+      "name": "港股跨境交易監控",
+      "domains": [
+        "brokerage"
+      ],
+      "market": "香港",
+      "type": "Streamlit",
+      "open": "tab",
+      "coldStart": true,
+      "login": true,
+      "url": "https://hk-cross-border-monitor.streamlit.app/",
+      "desc": "全港股盤中異常交易警報、VCM 監控、盤後預警列表與趨勢追蹤。",
+      "updates": "盤中每 30 分鐘、盤後 16:42"
+    },
+    {
+      "id": "esg-manual",
+      "name": "永續綠色金融綜合指南",
+      "domains": [
+        "esg"
+      ],
+      "market": "台灣",
+      "type": "網頁",
+      "open": "embed",
+      "url": "https://fubonsecurities.pages.dev/",
+      "desc": "永續經濟活動、綠色證券認證、溫室氣體範疇三，附企業永續健檢工具。"
+    },
+    {
+      "id": "hk-kyc",
+      "name": "香港 RPQ／KYC 表單",
+      "domains": [
+        "ops"
+      ],
+      "market": "香港",
+      "type": "網頁",
+      "open": "embed",
+      "status": "原型",
+      "url": "https://rmsecfb.github.io/HK-Margin-KYC/",
+      "desc": "15 題風險評估問卷，分 G1–G4 四級，含年長客戶與聯名帳戶提醒。"
+    }
+  ]
+}

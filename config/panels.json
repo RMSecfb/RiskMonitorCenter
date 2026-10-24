@@ -1,0 +1,234 @@
+{
+  "_說明": "大螢幕三區的指標設定。rule.type：above（高於門檻）、below（低於門檻）、bp_rise（當日上升 bp）、pct_drop（當日跌幅 %）。thresholdKey 讀 MarketData config.json 的 thresholds（warn=L1、danger=L2）；panelKey 讀 config.json 的 panel_thresholds（l1、l2、type）。沒有 rule 的指標顯示「未設門檻」，不影響該區燈號。",
+  "panels": [
+    {
+      "id": "bond",
+      "name": "債市",
+      "en": "BONDS",
+      "indicators": [
+        {
+          "id": "move",
+          "name": "MOVE 指數",
+          "path": "move",
+          "format": "index",
+          "change": "pct",
+          "rule": {
+            "type": "above",
+            "thresholdKey": "move"
+          },
+          "source": "Yahoo ^MOVE"
+        },
+        {
+          "id": "y2",
+          "name": "美債 2 年期",
+          "path": "y2",
+          "format": "yield",
+          "change": "bp",
+          "rule": {
+            "type": "bp_rise",
+            "thresholdKey": "y2_bp_rise"
+          },
+          "source": "U.S. Treasury"
+        },
+        {
+          "id": "y10",
+          "name": "美債 10 年期",
+          "path": "y10",
+          "format": "yield",
+          "change": "bp",
+          "rule": {
+            "type": "bp_rise",
+            "thresholdKey": "y10_bp_rise"
+          },
+          "source": "U.S. Treasury"
+        },
+        {
+          "id": "y30",
+          "name": "美債 30 年期",
+          "path": "y30",
+          "format": "yield",
+          "change": "bp",
+          "rule": {
+            "type": "bp_rise",
+            "thresholdKey": "y30_bp_rise"
+          },
+          "source": "U.S. Treasury"
+        },
+        {
+          "id": "spread",
+          "name": "10Y−2Y 利差",
+          "path": "spread",
+          "format": "bps",
+          "change": "none",
+          "rule": {
+            "type": "below",
+            "l2": 0
+          },
+          "source": "由 10Y、2Y 計算"
+        },
+        {
+          "id": "hy_oas",
+          "name": "高收益債利差",
+          "format": "bps",
+          "source": "FRED BAMLH0A0HYM2 美國高收益債（約晚一個交易日）",
+          "path": "markets_ext.credit.hy_oas",
+          "change": "abs_bp",
+          "rule": {
+            "panelKey": "hy_oas"
+          }
+        }
+      ]
+    },
+    {
+      "id": "equity",
+      "name": "股市",
+      "en": "EQUITIES",
+      "indicators": [
+        {
+          "id": "vix",
+          "name": "VIX 恐慌指數",
+          "path": "vix",
+          "format": "index",
+          "change": "pct",
+          "rule": {
+            "type": "above",
+            "thresholdKey": "vix"
+          },
+          "source": "Yahoo ^VIX"
+        },
+        {
+          "id": "sox",
+          "name": "費城半導體",
+          "path": "sox",
+          "format": "index",
+          "change": "pct",
+          "rule": {
+            "type": "pct_drop",
+            "thresholdKey": "sox_drop"
+          },
+          "source": "Yahoo ^SOX"
+        },
+        {
+          "id": "twii",
+          "name": "台股加權",
+          "format": "index",
+          "source": "Yahoo ^TWII",
+          "path": "markets_ext.indices.twii",
+          "change": "pct",
+          "rule": {
+            "panelKey": "twii"
+          }
+        },
+        {
+          "id": "n225",
+          "name": "日經 225",
+          "format": "index",
+          "source": "Yahoo ^N225",
+          "path": "markets_ext.indices.n225",
+          "change": "pct",
+          "rule": {
+            "panelKey": "n225"
+          }
+        },
+        {
+          "id": "kospi",
+          "name": "韓國 KOSPI",
+          "format": "index",
+          "source": "Yahoo ^KS11",
+          "path": "markets_ext.indices.kospi",
+          "change": "pct",
+          "rule": {
+            "panelKey": "kospi"
+          }
+        },
+        {
+          "id": "hsi",
+          "name": "香港恒生",
+          "format": "index",
+          "source": "Yahoo ^HSI",
+          "path": "markets_ext.indices.hsi",
+          "change": "pct",
+          "rule": {
+            "panelKey": "hsi"
+          }
+        },
+        {
+          "id": "sse",
+          "name": "上海綜合",
+          "format": "index",
+          "source": "Yahoo 000001.SS",
+          "path": "markets_ext.indices.sse",
+          "change": "pct",
+          "rule": {
+            "panelKey": "sse"
+          }
+        },
+        {
+          "id": "spx",
+          "name": "S&P 500",
+          "format": "index",
+          "source": "Yahoo ^GSPC",
+          "path": "markets_ext.indices.spx",
+          "change": "pct",
+          "rule": {
+            "panelKey": "spx"
+          }
+        },
+        {
+          "id": "ixic",
+          "name": "NASDAQ 綜合",
+          "format": "index",
+          "source": "Yahoo ^IXIC",
+          "path": "markets_ext.indices.ixic",
+          "change": "pct",
+          "rule": {
+            "panelKey": "ixic"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fx",
+      "name": "匯市",
+      "en": "FX",
+      "indicators": [
+        {
+          "id": "usdtwd",
+          "name": "美元兌台幣",
+          "format": "fx",
+          "path": "markets_ext.fx.usdtwd",
+          "change": "pct",
+          "rule": {
+            "panelKey": "usdtwd"
+          },
+          "source": "Yahoo TWD=X"
+        },
+        {
+          "id": "usdhkd",
+          "name": "美元兌港幣",
+          "format": "fx4",
+          "source": "Yahoo HKD=X",
+          "path": "markets_ext.fx.usdhkd",
+          "change": "pct"
+        },
+        {
+          "id": "usdjpy",
+          "name": "美元兌日圓",
+          "format": "fx",
+          "source": "Yahoo JPY=X",
+          "path": "markets_ext.fx.usdjpy",
+          "change": "pct"
+        },
+        {
+          "id": "audusd",
+          "name": "澳幣兌美元",
+          "format": "fx4",
+          "source": "Yahoo AUDUSD=X",
+          "note": "市場慣例報價，數字變大代表澳幣走強",
+          "path": "markets_ext.fx.audusd",
+          "change": "pct"
+        }
+      ]
+    }
+  ]
+}
