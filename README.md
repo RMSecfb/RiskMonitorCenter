@@ -62,17 +62,15 @@ RiskMonitorCenter/
 
 `open` 為 `embed` 時可在入口內預覽（需 `site.embedTools` 為 `true`）；Streamlit 等需要登入或喚醒的工具用 `tab`，在新分頁開啟。可加上 `login: true`、`coldStart: true`、`status`、`notice`、`updates` 等標示。
 
+**新增第五個業務領域**：`app.js` 要加一張辦公桌的位置。
+
 **調整門檻**：門檻存放在 MarketData 的 `config.json`，不在本 repo。原有指標改 `thresholds`，延伸指標改 `panel_thresholds`。延伸指標不要放進 `thresholds`，否則在 MarketData 儀表板設定頁儲存時會被清掉。
 
 **新增大螢幕指標**：先在 MarketData 的 `fetch_market.py` 加入資料，再於本 repo 的 `config/panels.json` 加一筆，`path` 指向資料位置，`rule` 指向門檻。
 
-## 部署（Cloudflare Pages）
 
-1. Cloudflare 後台 → Workers & Pages → Create → Pages → Connect to Git，選擇本 repo。
-2. Build settings：Framework preset 選 None，Build command 留空，Build output directory 填 `/`。
-3. 部署完成後取得 `*.pages.dev` 網址。
 
-## 限制內部存取（Cloudflare Access）
+## 部署（Cloudflare Pages）可再限制內部存取（Cloudflare Access）
 
 1. Cloudflare Zero Trust → Access → Applications → Add an application → Self-hosted。
 2. Application domain 填入上一步的 `*.pages.dev` 網址。
