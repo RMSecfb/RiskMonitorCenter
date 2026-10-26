@@ -90,6 +90,8 @@ GitHub Actions 的定時排程在清晨常延誤 2 小時以上（例如 06:07 �
 | 週二至週六 06:07、06:37、07:07 | MarketData 市場資料（資料已齊全時自動略過） |
 | 每天 07:17 | MarketData 國際新聞（今日已產生時略過） |
 | 每天 08:22 | negative-news 負面新聞（以每日排程身分執行，晚到的 GitHub 排程會略過） |
+| 週一至週五 10:02、10:32、11:02、11:32、12:17、13:32、14:02、14:32、15:02、15:32、16:02 | hk-cross-border-monitor 港股盤中監控 |
+| 週一至週五 16:42 | hk-cross-border-monitor 港股盤後批次 |
 
 ### 設定步驟
 
@@ -98,7 +100,7 @@ GitHub Actions 的定時排程在清晨常延誤 2 小時以上（例如 06:07 �
 GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens → Generate new token：
 
 - Resource owner：RMSecfb
-- Repository access：Only select repositories → `MarketData`、`negative-news`
+- Repository access：Only select repositories → `MarketData`、`negative-news`、`hk-cross-border-monitor`
 - Repository permissions → **Actions：Read and write**（其他維持 No access）
 - Expiration：依公司規定設定，並記下到期日；到期後排程會改由 GitHub 原排程（較晚）執行
 
@@ -110,7 +112,7 @@ Cloudflare → Workers & Pages → Create → Create Worker，名稱填 `risk-sc
 
 Worker → Settings → Variables and Secrets → Add：Type 選 **Secret**，Name 填 `GITHUB_TOKEN`，Value 貼上第 1 步的 token。
 
-**4. 新增三組定時觸發**
+**4. 新增四組定時觸發**
 
 Worker → Settings → Trigger events → Add → Cron Triggers，逐一新增（時間為 UTC）：
 
@@ -118,15 +120,18 @@ Worker → Settings → Trigger events → Add → Cron Triggers，逐一新增�
 7,37 22 * * MON-FRI
 7,17 23 * * *
 22 0 * * *
+2,17,32,42 2-8 * * MON-FRI
 ```
+
+最後一組只是涵蓋港股所有時間點的範圍，程式會依實際時間判斷是否觸發（見 `worker.js` 的 `jobsFor`），其餘時間點會略過。
 
 星期請用英文縮寫。Cloudflare 的星期數字 1 代表週日，寫成 `1-5` 會變成週日到週四。
 
 **5. 確認**
 
-瀏覽器打開 `https://risk-scheduler.<你的子網域>.workers.dev/check`，三個排程都顯示 `"ok": true` 即設定完成。這個網址只讀取排程狀態，不會觸發任何工作。之後可在 Worker 的 Logs 看到每次觸發結果，GitHub Actions 的執行紀錄中由 Cloudflare 觸發的會標示為 workflow_dispatch。
+瀏覽器打開 `https://risk-scheduler.<你的子網域>.workers.dev/check`，各排程都顯示 `"ok": true` 即設定完成。這個網址只讀取排程狀態，不會觸發任何工作。之後可在 Worker 的 Logs 看到每次觸發結果，GitHub Actions 的執行紀錄中由 Cloudflare 觸發的會標示為 workflow_dispatch。
 
-免費方案每個 Cloudflare 帳號最多 5 組定時觸發，本 Worker 使用 3 組。
+免費方案每個 Cloudflare 帳號最多 5 組定時觸發，本 Worker 使用 4 組。
 
 ## 快照更新
 

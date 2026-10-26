@@ -9,22 +9,36 @@
  *   7,37 22 * * MON-FRI   台北週二至週六 06:07、06:37 → 市場資料
  *   7,17 23 * * *         台北每天 07:07（週二至週六）→ 市場資料；07:17 → 國際新聞
  *   22 0 * * *            台北每天 08:22 → 負面新聞
+ *   2,17,32,42 2-8 * * MON-FRI
+ *                         台北週一至週五 → 港股跨境交易監控。此組合涵蓋較多時間點，
+ *                         實際只在下列時間觸發，其餘由 jobsFor() 略過：
+ *                         盤中 10:02 10:32 11:02 11:32 12:17 13:32 14:02 14:32 15:02 15:32 16:02
+ *                         盤後 16:42
  *
  * 需要的機密設定：GITHUB_TOKEN
- *   RMSecfb 帳號的 fine-grained token，只授權 MarketData 與 negative-news，
+ *   RMSecfb 帳號的 fine-grained token，授權 MarketData、negative-news、hk-cross-border-monitor，
  *   權限 Repository permissions → Actions: Read and write。
  *
- * 網址 /check：用唯讀方式確認 token 讀得到三個排程，不會觸發任何工作。
+ * 網址 /check：用唯讀方式確認 token 讀得到各排程，不會觸發任何工作。
  */
 
 const MD = "RMSecfb/MarketData";
 const NN = "RMSecfb/negative-news";
+const HK = "RMSecfb/hk-cross-border-monitor";
 
 const WORKFLOWS = {
   market: { name: "市場資料", repo: MD, file: "fetch_market.yml", inputs: { respect_complete: "true" } },
   news: { name: "國際新聞", repo: MD, file: "world_news.yml", inputs: { skip_if_done: "true" } },
   negative: { name: "負面新聞", repo: NN, file: "negative-news-ai.yml", inputs: { as_schedule: "true" } },
+  hkIntraday: { name: "港股盤中監控", repo: HK, file: "intraday.yml", inputs: {} },
+  hkEod: { name: "港股盤後批次", repo: HK, file: "eod.yml", inputs: {} },
 };
+
+// 港股盤中時間（UTC，分鐘數）：台北／香港 10:02 10:32 11:02 11:32 12:17 13:32 14:02 14:32 15:02 15:32 16:02
+const HK_INTRADAY_UTC = [
+  [2, 2], [2, 32], [3, 2], [3, 32], [4, 17], [5, 32], [6, 2], [6, 32], [7, 2], [7, 32], [8, 2],
+];
+const HK_EOD_UTC = [8, 42]; // 台北／香港 16:42
 
 /** 依觸發的 UTC 時間決定要跑哪些工作；星期在程式內再確認一次。 */
 export function jobsFor(when) {
@@ -36,6 +50,11 @@ export function jobsFor(when) {
   if (usWeekday && ((h === 22 && (m === 7 || m === 37)) || (h === 23 && m === 7))) jobs.push(WORKFLOWS.market);
   if (h === 23 && m === 17) jobs.push(WORKFLOWS.news);
   if (h === 0 && m === 22) jobs.push(WORKFLOWS.negative);
+  // 港股：UTC 週一至週五 = 香港週一至週五（盤中時段都在同一個 UTC 日）
+  if (usWeekday) {
+    if (HK_INTRADAY_UTC.some(([hh, mm]) => hh === h && mm === m)) jobs.push(WORKFLOWS.hkIntraday);
+    if (h === HK_EOD_UTC[0] && m === HK_EOD_UTC[1]) jobs.push(WORKFLOWS.hkEod);
+  }
   return jobs;
 }
 
@@ -54,7 +73,7 @@ function gh(env, path, init = {}) {
 
 async function dispatch(env, job) {
   const path = `/repos/${job.repo}/actions/workflows/${job.file}/dispatches`;
-  const body = JSON.stringify({ ref: "main", inputs: job.inputs });
+  const body = JSON.stringify({ ref: "main", inputs: job.inputs || {} });
   for (let attempt = 1; attempt <= 2; attempt++) {
     const res = await gh(env, path, { method: "POST", body });
     if (res.status === 204) {
@@ -86,7 +105,7 @@ export default {
     const json = (data, status = 200) =>
       new Response(JSON.stringify(data, null, 2), { status, headers: { "Content-Type": "application/json; charset=utf-8" } });
     if (url.pathname !== "/check") {
-      return json({ service: "風險管理排程觸發器", check: "/check 可確認 token 是否讀得到三個排程（不會觸發工作）" });
+      return json({ service: "風險管理排程觸發器", check: "/check 可確認 token 是否讀得到各排程（不會觸發工作）" });
     }
     if (!env.GITHUB_TOKEN) return json({ ok: false, error: "尚未設定 GITHUB_TOKEN" }, 500);
     const results = await Promise.all(

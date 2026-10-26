@@ -5,7 +5,7 @@ compatibility_date = "2024-09-23"
 
 [triggers]
 # UTC；星期用英文縮寫（Cloudflare 的數字 1 代表週日）
-crons = ["7,37 22 * * MON-FRI", "7,17 23 * * *", "22 0 * * *"]
+crons = ["7,37 22 * * MON-FRI", "7,17 23 * * *", "22 0 * * *", "2,17,32,42 2-8 * * MON-FRI"]
 
 [observability]
 enabled = true
