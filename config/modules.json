@@ -111,7 +111,7 @@
       "type": "網頁",
       "open": "embed",
       "url": "https://fubonsecurities.pages.dev/",
-      "desc": "永續經濟活動、綠色證券認證、溫室氣體範疇三，附企業永續健檢工具。"
+      "desc": "永續經濟活動、綠色金融、溫室氣體範疇三，附企業永續健檢工具。"
     },
     {
       "id": "hk-kyc",
@@ -124,7 +124,7 @@
       "open": "embed",
       "status": "原型",
       "url": "https://rmsecfb.github.io/HK-Margin-KYC/",
-      "desc": "15 題風險評估問卷，分 G1–G4 四級，含年長客戶與聯名帳戶提醒。"
+      "desc": "15 題風險評估問卷，分 G1–G4 四級，含高齡客戶與關連帳戶提醒。"
     }
   ]
 }
