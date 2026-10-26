@@ -73,6 +73,20 @@
 - 判讀順序：標題含嚴重或重大事件字詞者優先；同分時 FinBERT 越負面越先判讀。
 - 負面新聞的 Streamlit 網站也有「人工執行」功能，效果相同。
 
+### 負面新聞：離線人工覆核（不耗 AI 額度）
+
+用 Excel 批次覆核「待補分析」「待人工覆核」或疑似分類錯誤的新聞，不呼叫 Groq。
+
+1. 取得覆核檔（`review_batchN_*.xlsx`）：黃色欄位是要填的，「最終決定」已預填建議（維持／修改／排除）。
+2. 在「覆核」工作表確認或改寫「最終決定」；選「修改」時從下拉選單選「新事件代碼」；公司或 Ticker 歸屬有誤才填「更正公司／更正Ticker」。不要改 `news_id`、`人工版本`。
+3. 另存為 `原檔名_已確認.xlsx`，上傳到 `negative-news` 的 `review_inbox/` 資料夾。
+4. 上傳後 GitHub Action「離線覆核匯入」會自動執行（約 1–2 分鐘），把結果寫回 `news_daily/`，處理完的檔案與逐筆結果 `*_結果.csv` 移到 `review_inbox/done/`。
+5. 排除＝`NOT_RELEVANT`、Level 0、Action「排除、不納入風險事件」；寫回後標記為已人工覆核，之後每日排程不會再重判。
+
+- 匯入前若該筆新聞已被別人覆核、或排程已改變其分類，該筆會被略過並列在結果檔，不會覆蓋，請重新產生覆核檔。
+- 匯入器與說明在 `negative-news` 的 `pipeline/review_import.py`、`review_inbox/README.md`。
+- 匯入 Action 與每日排程共用同一個併發群組，不會同時寫檔。
+
 ## 五、常見異常
 
 | 狀況 | 可能原因 | 處理方式 |
@@ -83,7 +97,8 @@
 | 新指標顯示「待串接」 | `latest.json` 沒有 `markets_ext` | 手動執行一次市場指標 |
 | 國際新聞「今日摘要未產生」 | Groq 模型呼叫失敗（已自動重試 3 次）、金鑰失效 | 看 `news/latest.json` 的 `status` 與 `error` 欄位；暫時性錯誤手動重跑即可；`no_key` 代表 MarketData 的 Secret `GROQ_API_KEY` 不見了 |
 | 國際新聞內容不理想 | 當天新聞來源標題品質 | 手動重跑一次；長期問題調整 `fetch_news.py` 的提示詞或來源 |
-| 負面新聞大量「待補分析」 | AI 判讀額度用完（每天 120 則） | 屬正常限制；待補分析不代表沒有風險，可隔天以 `resume` 補分析 |
+| 負面新聞大量「待補分析」 | AI 判讀額度用完（每天 120 則） | 屬正常限制；待補分析不代表沒有風險，可隔天以 `resume` 補分析，或用上方「離線人工覆核」批次處理 |
+| 上傳 `_已確認.xlsx` 後沒有變化 | 檔名未以 `_已確認.xlsx` 結尾、檔案放錯資料夾，或 Action 失敗 | 確認放在 `review_inbox/` 根目錄；到 negative-news 的 Actions 看「離線覆核匯入」；逐筆原因看 `review_inbox/done/*_結果.csv` |
 | 網站顯示「設定檔讀取失敗」 | `config/*.json` 格式錯誤 | 到 RiskMonitorCenter 的提交紀錄，還原最近一次修改 |
 | 某天整個沒排程 | Cloudflare Worker 權杖過期 | 見第六節 |
 
