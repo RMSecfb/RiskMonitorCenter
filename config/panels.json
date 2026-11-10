@@ -97,6 +97,17 @@
           "source": "Yahoo ^VIX"
         },
         {
+          "id": "vxn",
+          "name": "VXN 那斯達克100波動率",
+          "format": "index",
+          "source": "Yahoo ^VXN（Nasdaq-100 選擇權隱含的 30 日預期波動率）",
+          "path": "markets_ext.volatility.vxn",
+          "change": "pct",
+          "rule": {
+            "panelKey": "vxn"
+          }
+        },
+        {
           "id": "sox",
           "name": "費城半導體",
           "path": "sox",
